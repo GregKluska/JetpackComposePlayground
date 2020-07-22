@@ -1,8 +1,11 @@
-package com.gregkluska.jetpackcomposeplayground
+package com.gregkluska.jetpackcomposeplayground.ui.main
 
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.Composable
+import androidx.lifecycle.Observer
 import androidx.ui.core.ContentScale
 import androidx.ui.core.Modifier
 import androidx.ui.core.clip
@@ -12,20 +15,53 @@ import androidx.ui.foundation.Text
 import androidx.ui.foundation.shape.corner.RoundedCornerShape
 import androidx.ui.layout.*
 import androidx.ui.material.MaterialTheme
-import androidx.ui.material.Surface
 import androidx.ui.res.imageResource
 import androidx.ui.text.style.TextOverflow
 import androidx.ui.tooling.preview.Preview
 import androidx.ui.unit.dp
-import com.gregkluska.jetpackcomposeplayground.ui.JetpackComposePlaygroundTheme
+import com.gregkluska.jetpackcomposeplayground.R
+import com.gregkluska.jetpackcomposeplayground.api.ApiEmptyResponse
+import com.gregkluska.jetpackcomposeplayground.api.ApiErrorResponse
+import com.gregkluska.jetpackcomposeplayground.api.ApiSuccessResponse
+import dagger.hilt.android.AndroidEntryPoint
 
+private const val TAG = "MainActivity"
+
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             NewsStory()
         }
+
+        subscribeObservers()
     }
+
+    private fun subscribeObservers() {
+
+        viewModel.testPostListRequest().observe(this, Observer { response -> 
+            when (response) {
+                is ApiSuccessResponse -> {
+                    Log.d(TAG, "subscribeObservers: Success response : ${response.body}")
+                }
+                
+                is ApiErrorResponse -> {
+                    Log.d(TAG, "subscribeObservers: Error response : ${response.errorMessage}")
+                }
+                
+                is ApiEmptyResponse -> {
+                    Log.d(TAG, "subscribeObservers: Empty response")
+                }
+            }
+        })
+
+    }
+
 }
 
 @Composable
